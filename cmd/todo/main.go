@@ -1,9 +1,9 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/leplasmo/todo-api"
 )
@@ -11,6 +11,13 @@ import (
 const todoFileName = ".todo.json"
 
 func main() {
+	// parse command line flags
+	task := flag.String("task", "", "Task to be included in the TODO list")
+	list := flag.Bool("list", false, "List all TODOs")
+	complete := flag.Int("complete", 0, "TODO item to mark as completed")
+
+	flag.Parse()
+
 	l := &todo.List{}
 
 	// (try to) read existing ToDos from file
@@ -19,25 +26,28 @@ func main() {
 		os.Exit(1)
 	}
 
-	// depending of the number of arguments
+	// depending on the provided flags
 	switch {
-	// no arguments - print the list
-	case len(os.Args) == 1: // note: arg 1 is the command itself
-		for _, item := range *l {
-			fmt.Println(item.Task)
+	case *list:
+		fmt.Print(l)
+	case *complete > 0:
+		if err := l.Complete(*complete); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
 		}
-	// any other number of arguments - add a new ToDo from args
-	default:
-		// concat all arguments using space
-		item := strings.Join(os.Args[1:], " ")
-
-		// add the ToDo
-		l.Add(item)
-
-		// save the new list
 		if err := l.Save(todoFileName); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
 		}
+	case *task != "":
+		l.Add(*task)
+		if err := l.Save(todoFileName); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+	default:
+		// invalid flag provided
+		fmt.Fprintln(os.Stderr, "Invalid option")
+		os.Exit(1)
 	}
 }

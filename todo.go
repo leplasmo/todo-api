@@ -20,6 +20,23 @@ type item struct {
 // List represents a list of ToDo items
 type List []item
 
+// String() prints out the formatted list
+// implements the fmt.Stringer interface
+func (l *List) String() string {
+	formatted := ""
+
+	for k, t := range *l {
+		prefix := "[ ]"
+		if t.Done {
+			prefix = "[X]"
+		}
+
+		formatted += fmt.Sprintf("%s%3d: %s\n", prefix, k+1, t.Task)
+	}
+
+	return formatted
+}
+
 // Add() adds a ToDo item to the list
 func (l *List) Add(task string) {
 	t := item{
