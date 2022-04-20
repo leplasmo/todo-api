@@ -8,7 +8,7 @@ import (
 	"github.com/leplasmo/todo-api"
 )
 
-const todoFileName = ".todo.json"
+var todoFileName = ".todo.json"
 
 func main() {
 	// parse command line flags
@@ -17,6 +17,11 @@ func main() {
 	complete := flag.Int("complete", 0, "TODO item to mark as completed")
 
 	flag.Parse()
+
+	// get filename from env
+	if os.Getenv("TODO_FILENAME") != "" {
+		todoFileName = os.Getenv("TODO_FILENAME")
+	}
 
 	l := &todo.List{}
 
